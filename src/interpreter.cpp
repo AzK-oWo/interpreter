@@ -52,19 +52,10 @@ std::string OPERTEXT [] = {
 	"*", "/", "%"
 };
 
-enum CLASSTYPE {
-	LEX,
-	NUMBER,
-	OPER,
-};
-
 class Lexem {
   public:
 	Lexem() {};
 	virtual ~Lexem() {};
-	virtual CLASSTYPE getClasstype() {
-		return LEX;
-	};
 };
 
 class Number : public Lexem {
@@ -72,15 +63,12 @@ class Number : public Lexem {
   public:
 	Number() {};
 	Number(int smthg) {
-		value = smthg; 
+		value = smthg;
 	};
 	virtual ~Number() {};
 	int getValue();
 	void print() {
 		std::cout << value << ' ';
-	};
-	virtual CLASSTYPE getClasstype() {
-		return NUMBER;
 	};
 };
 
@@ -100,38 +88,10 @@ class Oper : public Lexem {
 		return opertype;
 	};
 	int getPriority ();
-	int getValue (int left, int right);
-
-
-	virtual CLASSTYPE getClasstype() {
-		return OPER;
-	};
-	
+	int getValue (Lexem *leftlex, Lexem *rightlex);
 
 	void print() {
-		switch (opertype) {
-			case PLUS:
-				std::cout << "+ ";
-				break;
-			case MINUS:
-				std::cout << "- ";
-				break;
-			case MULT:
-				std::cout << "* ";
-				break;
-			case RBRACKET:
-				std::cout << ") ";
-				break;			
-			case LBRACKET:
-				std::cout << "( ";
-				break;
-			case DIV:
-				std::cout << "/ ";
-				break;
-			case MOD:
-				std::cout << "% ";
-				break;
-		}
+		std::cout << OPERTEXT[(int)opertype] << ' ';
 	};
 
 
@@ -141,8 +101,58 @@ int Oper::getPriority() {
 	return PRIORITY[(int)opertype];
 }
 
-int Oper::getValue(int left, int right) {
+class Variable : public Lexem {
+	std::string vName;
+  public:
+	Variable() {};
+	Variable(std::string str) {
+		vName = str;
+		vTable.insert({vName, 0});
+	};
+	~Variable() {};
+	int getValue();
+	void setValue(int value);
+	static std::map<std::string,int> vTable;
+
+	void print() {
+			std::cout << vName << ' ';
+		};
+};
+
+std::map<std::string,int> Variable::vTable;
+
+void Variable::setValue(int value) {
+	vTable[vName] = value;
+}
+
+int Variable::getValue() {
+	return vTable[vName];
+}
+
+int Oper::getValue(Lexem *leftlex, Lexem *rightlex) {
+	int left, right;
+	if (Number *ptr = dynamic_cast<Number *>(leftlex)) {
+		left = ((Number *)leftlex) -> getValue();
+	}
+	if (Number *ptr = dynamic_cast<Number *>(rightlex)) {
+		right = ((Number *)rightlex) -> getValue();
+	}
+	if (Variable *ptr = dynamic_cast<Variable *>(leftlex)) {
+		left = ((Variable *)leftlex) -> getValue();
+	}
+	if (Variable *ptr = dynamic_cast<Variable *>(rightlex)) {
+		right = ((Variable *)rightlex) -> getValue();
+	}
 	switch (Oper::opertype) {
+			case ASSIGN:
+				int tmp;
+				if (Number *ptr = dynamic_cast<Number *>(rightlex)) {
+					tmp = ((Number *)rightlex) -> getValue();
+				} else {
+					tmp = ((Variable *)rightlex) -> getValue();
+				}
+				((Variable *)leftlex) -> setValue(tmp);
+				return tmp;
 			case PLUS:
 				return left + right;
 			case MINUS:
@@ -153,30 +163,51 @@ int Oper::getValue(int left, int right) {
 				return left / right;
 			case MOD:
 				return left % right;
+			case OR:
+				return left || right;
+			case AND:
+				return left && right;
+			case BITOR:
+				return left | right;
+			case XOR:
+				return left ^ right;
+			case BITAND:
+				return left & right;
+			case EQ:
+				return left == right;
+			case NEQ:
+				return left != right;
+			case LEQ:
+				return left <= right;
+			case LT:
+				return left < right;
+			case GEQ:
+				return left >= right;
+			case GT:
+				return left > right;
+			case SHL:
+				return left << right;
+			case SHR:
+				return left >> right;
 	}
 	return 0;
 }
 
-std::vector<Lexem *> parseLexem(std::string codeline) {
-	int line_size = codeline.size();
-	std::vector<Lexem *> res;
-	Lexem *lex;
-	int number = 0;
-	for (int i = 0, mode = 0; i < line_size; ++i)
-	{
-		if (codeline[i] >= '0' && codeline[i] <= '9') {
-			mode = 1;
-			number = number * 10 + codeline[i] - '0';
-		} else {
-			if (mode){	
-				lex = new Number(number);
-				res.push_back(lex);
-				number = 0;
-				mode = 0;
-			}
-			bool flag = true;
-			switch (codeline[i]) {
+static std::map<std::string, int> vTable;
 
+
+Lexem *isOper(std::string codeline, int *i, int size) {
+	int p = *i;
+	Lexem *lex = nullptr;
+	char tmp = codeline[p];
+	while (p < size && (tmp == ' ' || tmp == '\t')) {
+		++p;
+		tmp = codeline[p];
+	}
+	*i = p;
+	if (p != size) {
+		//сделать без кейсов презентация
+		switch (codeline[p]) {
 				case '+':
 					lex = new Oper(PLUS);
 					break;
@@ -198,98 +229,168 @@ std::vector<Lexem *> parseLexem(std::string codeline) {
 				case '%':
 					lex = new Oper(MOD);
 					break;
-/*				case ":=":
-					lex = new Oper(ASSIGN);
-					break;
-				case '&':
-					lex = new Oper(BITAND);
-					break;
-				case '|':
-					lex = new Oper(BITOR);
-					break;
 				case '^':
 					lex = new Oper(XOR);
 					break;
-				case "and":
-					lex = new Oper(AND);
+				case ':':
+					if (codeline[p + 1] == '=') {
+						lex = new Oper(ASSIGN);
+						p++;
+					}
 					break;
-				case "or":
-					lex = new Oper(OR);
+				case '!':
+					if(codeline[p + 1] == '=') {
+						lex = new Oper(NEQ);
+						p++;
+					}
 					break;
-				case "<=":
-					lex = new Oper(LEQ);
+				case '=':
+					if (codeline[p + 1] == '=') {
+						lex = new Oper(EQ);
+						p++;
+					}
+					break;
+				case '&':
+					if (codeline[p + 1] == '&') {
+						lex = new Oper(AND);
+						p++;
+					} else {
+						lex = new Oper(BITAND);
+					}
+					break;
+				case '|':
+					if (codeline[p + 1] == '|') {
+						lex = new Oper(OR);
+						p++;
+					} else {
+						lex = new Oper(BITOR);
+					}
 					break;
 				case '<':
-					lex = new Oper(LT);
+					if (codeline[p + 1] == '=') {
+						lex = new Oper(LEQ);
+						p++;
+					} else {
+						if (codeline[p + 1] == '<') {
+							lex = new Oper(SHL);
+							p++;
+						} else {
+							lex = new Oper(LT);
+						}
+					}
 					break;
 				case '>':
-					lex = new Oper(GEQ);
+					if (codeline[p + 1] == '=') {
+						lex = new Oper(GEQ);
+						p++;
+					} else {
+						if (codeline[p + 1] == '>') {
+							lex = new Oper(SHR);
+							p++;
+						} else {
+							lex = new Oper(GT);
+						}
+					}
 					break;
-				case ">=":
-					lex = new Oper(GT);
-					break;
-				case "==":
-					lex = new Oper(EQ);
-					break;
-				case "!=":
-					lex = new Oper(NEQ);
-					break;
-				case ">>":
-					lex = new Oper(SHR);
-					break;
-				case "<<":
-					lex = new Oper(SHL);
-					break;*/
 				default:
-					flag = false;
+					return nullptr;
 					break;
 			}
-
-			if (flag) {
-				res.push_back(lex);
-			}
-		}
+			*i = p + 1;
 	}
-	if (number != 0) {
-		lex = new Number(number);
-		res.push_back(lex);	
+	return lex;
+}
+
+Lexem *isNumber(std::string codeline, int *i, int size) {
+	int p = *i, number = 0;
+	for ( ; p < size && codeline[p] >= '0' && codeline[p] <= '9'; p++) {
+		number = number * 10 + codeline[p] - '0';
+	}
+	if (p == *i) {
+		return nullptr;
+	}
+	*i = p;
+	Lexem *lex = new Number(number);
+	return lex;
+}
+
+Lexem *isVariable(std::string codeline, int *i, int size) {
+	int p = *i;
+	std::string vrbl;
+	while (p < size && ((codeline[p] >= 'A' && codeline[p] <= 'Z') || (codeline[p] >= 'a' && codeline[p] <= 'z') || (codeline[p] >= '0' && codeline[p] <= '9'))) {
+		vrbl += codeline[p];
+		p++;
+	}
+	if (p == *i) {
+		return nullptr;
+	}
+	*i = p;
+	Lexem *lex = new Variable(vrbl);
+	return lex;
+}
+
+std::vector<Lexem *> parseLexem(std::string codeline) {
+	codeline = codeline + ' ';
+	int size = codeline.size();
+	std::vector<Lexem *> res;
+	Lexem *lex;
+	int i = 0;
+	while (i < size) {
+		lex = isOper(codeline, &i, size);
+		if (lex != nullptr) {
+				res.push_back(lex);
+				continue;
+		}
+		lex = isNumber(codeline, &i, size);
+		if (lex != nullptr) {
+			res.push_back(lex);
+			continue;
+		}
+		lex = isVariable(codeline, &i, size);
+		if (lex != nullptr) {
+			res.push_back(lex);
+			continue;
+		}
 	}
 	return res;
 }
+
 
 std::vector<Lexem *> buildPostfix (std::vector<Lexem *> infix) {
 	std::vector<Lexem *> lexemStack;
 	std::vector<Oper *> operStack;
 	for (auto &elem: infix) {
-		if (elem -> getClasstype() == NUMBER) {
+		Number *ptr1;
+		Variable *ptr2;
+		if ((ptr1 = dynamic_cast<Number *>(elem)) || (ptr2 = dynamic_cast<Variable *>(elem))) {
 			lexemStack.push_back(elem);
-		} else {
-			OPERATOR tmp_elem = ((Oper *)elem) -> getType();
-			if (operStack.empty() || tmp_elem == LBRACKET) {
-				operStack.push_back((Oper *)elem);
-			} else {
-				if (tmp_elem == RBRACKET) {
-					while ((operStack.back()) -> getType() != LBRACKET) {
-						lexemStack.push_back(operStack.back());
-						operStack.pop_back();
-					}
-					operStack.pop_back();
-				} else {
-					if (tmp_elem == ASSIGN && ASSIGN == (operStack.back()) -> getType()) {
-						operStack.push_back((Oper *)elem);
-					} else {
-						if (((Oper *)elem) -> getPriority() <= (operStack.back()) -> getPriority()) {
-							while (!(operStack.empty()) && ((operStack.back()) -> getType()) != LBRACKET) {
-								lexemStack.push_back(operStack.back());
-								operStack.pop_back();
-							}
-							operStack.push_back((Oper *)elem);
-						} else {
-							operStack.push_back((Oper *)elem);
-						}
-					}
-				}
+			continue;
+		}
+		OPERATOR tmp_elem = ((Oper *)elem) -> getType();
+		if (operStack.empty() || tmp_elem == LBRACKET) {
+			operStack.push_back((Oper *)elem);
+			continue;
+		}
+		if (tmp_elem == RBRACKET) {
+			while ((operStack.back()) -> getType() != LBRACKET) {
+				lexemStack.push_back(operStack.back());
+				operStack.pop_back();
 			}
+			operStack.pop_back();
+			continue;
+		}
+		if (tmp_elem == ASSIGN && ASSIGN == (operStack.back()) -> getType()) {
+			operStack.push_back((Oper *)elem);
+			continue;
+		}
+		if (((Oper *)elem) -> getPriority() <= (operStack.back()) -> getPriority()) {
+			while (!(operStack.empty()) && ((operStack.back()) -> getType()) != LBRACKET) {
+				lexemStack.push_back(operStack.back());
+				operStack.pop_back();
+			}
+			operStack.push_back((Oper *)elem);
+		} else {
+			operStack.push_back((Oper *)elem);
 		}
 	}
 	while (!operStack.empty()) {
@@ -300,55 +401,81 @@ std::vector<Lexem *> buildPostfix (std::vector<Lexem *> infix) {
 }
 
 int evaluatePostfix(std::vector<Lexem *> postfix) {
-	std::vector<int> estimation;
-	int res;
-	for (auto &label: postfix) {
-		if (label -> getClasstype() == NUMBER) {
-			estimation.push_back(((Number *)label) -> getValue());
+	std::vector<Lexem *> estimation;
+	std::vector<Number *> need_to_clear;
+	Lexem *res;
+	for (auto &elem: postfix) {
+		if (Number *ptr = dynamic_cast<Number *>(elem)) {
+			estimation.push_back(elem);
+			continue;
+		}
+		if (Variable *ptr = dynamic_cast<Variable *>(elem)) {
+			estimation.push_back(elem);
 		} else {
-			res = estimation.back(),
+			res = estimation.back();
 			estimation.pop_back();
-			res = ((Oper *)label) -> getValue(estimation.back(), res);
+			res = new Number(((Oper *)elem) -> getValue(estimation.back(), res));
 			estimation.pop_back();
 			estimation.push_back(res);
+			need_to_clear.push_back((Number *)res);
 		}
 	}
-	estimation.clear();
-	return res;
+	res = estimation.back();
+	estimation.pop_back();
+	int result;
+	if (Number *ptr = dynamic_cast<Number *>(res)) {
+		result = ((Number *)res) -> getValue();
+	}
+	if (Variable *ptr = dynamic_cast<Variable *>(res)) {
+		result = ((Variable *)res) -> getValue();
+	}
+	for (auto &cl: need_to_clear) {
+		delete cl;
+	}
+	return result;
 }
-
 
 int main(void) {
 	std::string codeline;
 	std::vector<Lexem *> infix;
 	std::vector<Lexem *> postfix;
 	int value;
-
 	while (getline(std::cin, codeline)) {
+		if (codeline == "exit") {
+			break;
+		}
 		infix = parseLexem(codeline);
-/*		std::cout << std::endl << infix.size() << std::endl;
+/*		std::cout << std::endl << "size of infix = " << infix.size() <<std::endl;
 		for (auto &p: infix) {
-			if (p -> getClasstype() == NUMBER) {
+			if (Number *ptr = dynamic_cast<Number *>(p)) {
 				((Number *)p) -> print();
+				continue;
 			}
-			else {
-				((Oper *)p) -> print();
+			if (Variable *ptr = dynamic_cast<Variable *>(p)) {
+				((Variable *)p) -> print();
+			} else {
+				((Oper *)p) ->print();
 			}
 		}*/
 		postfix = buildPostfix(infix);
 /*		std::cout << std::endl << postfix.size() << std::endl;
 		for (auto &p: postfix) {
-			if (p -> getClasstype() == NUMBER) {
+			if (Number *ptr = dynamic_cast<Number *>(p)) {
 				((Number *)p) -> print();
+				continue;
 			}
-			else {
+			if (Variable *ptr = dynamic_cast<Variable *>(p)) {
+				((Variable *)p) -> print();
+			} else {
 				((Oper *)p) -> print();
 			}
 		}
 		std::cout << std::endl;*/
 		value = evaluatePostfix(postfix);
 		std::cout << ">>>" << value << std::endl;
-		postfix.clear();
-	} 
+		for (auto &cl: infix) {
+			delete cl;
+		}
+	}
 	return 0;
 }
