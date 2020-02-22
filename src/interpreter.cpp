@@ -205,98 +205,14 @@ Lexem *isOper(std::string codeline, int *i, int size) {
 		tmp = codeline[p];
 	}
 	*i = p;
-	if (p != size) {
-		//сделать без кейсов презентация
-		switch (codeline[p]) {
-				case '+':
-					lex = new Oper(PLUS);
-					break;
-				case '-':
-					lex = new Oper(MINUS);
-					break;
-				case '*':
-					lex = new Oper(MULT);
-					break;
-				case '(':
-					lex = new Oper(LBRACKET);
-					break;
-				case ')':
-					lex = new Oper(RBRACKET);
-					break;
-				case '/':
-					lex = new Oper(DIV);
-					break;
-				case '%':
-					lex = new Oper(MOD);
-					break;
-				case '^':
-					lex = new Oper(XOR);
-					break;
-				case ':':
-					if (codeline[p + 1] == '=') {
-						lex = new Oper(ASSIGN);
-						p++;
-					}
-					break;
-				case '!':
-					if(codeline[p + 1] == '=') {
-						lex = new Oper(NEQ);
-						p++;
-					}
-					break;
-				case '=':
-					if (codeline[p + 1] == '=') {
-						lex = new Oper(EQ);
-						p++;
-					}
-					break;
-				case '&':
-					if (codeline[p + 1] == '&') {
-						lex = new Oper(AND);
-						p++;
-					} else {
-						lex = new Oper(BITAND);
-					}
-					break;
-				case '|':
-					if (codeline[p + 1] == '|') {
-						lex = new Oper(OR);
-						p++;
-					} else {
-						lex = new Oper(BITOR);
-					}
-					break;
-				case '<':
-					if (codeline[p + 1] == '=') {
-						lex = new Oper(LEQ);
-						p++;
-					} else {
-						if (codeline[p + 1] == '<') {
-							lex = new Oper(SHL);
-							p++;
-						} else {
-							lex = new Oper(LT);
-						}
-					}
-					break;
-				case '>':
-					if (codeline[p + 1] == '=') {
-						lex = new Oper(GEQ);
-						p++;
-					} else {
-						if (codeline[p + 1] == '>') {
-							lex = new Oper(SHR);
-							p++;
-						} else {
-							lex = new Oper(GT);
-						}
-					}
-					break;
-				default:
-					return nullptr;
-					break;
-			}
-			*i = p + 1;
+	int n = sizeof(OPERTEXT) / sizeof(std::string);
+	for (int op = 0; op < n; op++) {
+		std::string subcodeline = codeline.substr(p, OPERTEXT[op].size());
+		if (OPERTEXT[op] == subcodeline) {
+			lex = new Oper((OPERATOR)op);
+			*i += OPERTEXT[op].size();
+			break;
+		}
 	}
 	return lex;
 }
@@ -437,8 +353,7 @@ int evaluatePostfix(std::vector<Lexem *> postfix) {
 
 int main(void) {
 	std::string codeline;
-	std::vector<Lexem *> infix;
-	std::vector<Lexem *> postfix;
+	std::vector<Lexem *> infix, postfix;
 	int value;
 	while (getline(std::cin, codeline)) {
 		if (codeline == "exit") {
