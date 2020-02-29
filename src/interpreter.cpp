@@ -3,10 +3,12 @@
 #include <vector>
 #include <string>
 #include <typeinfo>
+#include <unistd.h>
+
 
 enum OPERATOR {
 	LBRACKET, RBRACKET,
-	ASSIGN,
+	GOTO, ASSIGN, COLON,
 	OR,
 	AND,
 	BITOR,
@@ -22,7 +24,7 @@ enum OPERATOR {
 
 int PRIORITY [] = {
 	-1, -1,
-	0,
+	0, 0, 0,
 	1,
 	2,
 	3,
@@ -38,25 +40,46 @@ int PRIORITY [] = {
 
 std::string OPERTEXT [] = {
 	"(", ")",
-	":= ",
-	"or ",
-	"and ",
+	"goto", ":=", ":",
+	"or",
+	"and",
 	"|",
 	"^",
 	"&",
-	"== ", "!= ",
-	"<= ", "<",
-	">= ", ">",
+	"==", "!=",
+	"<=", "<",
+	">=", ">",
 	"<<", ">>",
 	"+", "-",
 	"*", "/", "%"
 };
+
+
+
+
+
+
+
+
+
+
+
 
 class Lexem {
   public:
 	Lexem() {};
 	virtual ~Lexem() {};
 };
+
+
+
+
+
+
+
+
+
+
 
 class Number : public Lexem {
 	int value;
@@ -76,9 +99,19 @@ int Number::getValue(){
 	return value;
 }
 
+
+
+
+
+
+
+
+
+
+
 class Oper : public Lexem {
 	OPERATOR opertype;
-  public :
+  public:
 	Oper () {};
 	Oper (OPERATOR opertype) {
 		Oper::opertype = opertype;
@@ -94,12 +127,37 @@ class Oper : public Lexem {
 		std::cout << OPERTEXT[(int)opertype] << ' ';
 	};
 
-
 };
+
 
 int Oper::getPriority() {
 	return PRIORITY[(int)opertype];
 }
+
+
+
+
+
+
+
+
+class Goto : public Oper {
+  public:
+	static std::map<std::string, int> lTable;
+};
+
+std::map<std::string, int> Goto::lTable;
+
+
+
+
+
+
+
+
+
+
+
 
 class Variable : public Lexem {
 	std::string vName;
@@ -107,9 +165,10 @@ class Variable : public Lexem {
 	Variable() {};
 	Variable(std::string str) {
 		vName = str;
-		vTable.insert({vName, 0});
+		vTable[vName];
 	};
 	~Variable() {};
+	std::string getName();
 	int getValue();
 	void setValue(int value);
 	static std::map<std::string,int> vTable;
@@ -121,6 +180,10 @@ class Variable : public Lexem {
 
 std::map<std::string,int> Variable::vTable;
 
+std::string Variable::getName() {
+	return vName;
+}
+
 void Variable::setValue(int value) {
 	vTable[vName] = value;
 }
@@ -128,6 +191,24 @@ void Variable::setValue(int value) {
 int Variable::getValue() {
 	return vTable[vName];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int Oper::getValue(Lexem *leftlex, Lexem *rightlex) {
 	int left, right;
@@ -193,7 +274,26 @@ int Oper::getValue(Lexem *leftlex, Lexem *rightlex) {
 	return 0;
 }
 
-static std::map<std::string, int> vTable;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Lexem *isOper(std::string codeline, int *i, int size) {
@@ -217,6 +317,8 @@ Lexem *isOper(std::string codeline, int *i, int size) {
 	return lex;
 }
 
+
+
 Lexem *isNumber(std::string codeline, int *i, int size) {
 	int p = *i, number = 0;
 	for ( ; p < size && codeline[p] >= '0' && codeline[p] <= '9'; p++) {
@@ -229,6 +331,8 @@ Lexem *isNumber(std::string codeline, int *i, int size) {
 	Lexem *lex = new Number(number);
 	return lex;
 }
+
+
 
 Lexem *isVariable(std::string codeline, int *i, int size) {
 	int p = *i;
@@ -245,37 +349,63 @@ Lexem *isVariable(std::string codeline, int *i, int size) {
 	return lex;
 }
 
+
+
 std::vector<Lexem *> parseLexem(std::string codeline) {
 	codeline = codeline + ' ';
 	int size = codeline.size();
-	std::vector<Lexem *> res;
+	std::vector<Lexem *> infix;
 	Lexem *lex;
 	int i = 0;
 	while (i < size) {
 		lex = isOper(codeline, &i, size);
 		if (lex != nullptr) {
-				res.push_back(lex);
+				infix.push_back(lex);
 				continue;
 		}
 		lex = isNumber(codeline, &i, size);
 		if (lex != nullptr) {
-			res.push_back(lex);
+			infix.push_back(lex);
 			continue;
 		}
 		lex = isVariable(codeline, &i, size);
 		if (lex != nullptr) {
-			res.push_back(lex);
+			infix.push_back(lex);
 			continue;
 		}
 	}
-	return res;
+	return infix;
 }
 
+
+void initLabels(std::vector<Lexem *> &infix, int row) {
+	int size = infix.size();
+	for (int i = 1; i < size; ++i) {
+		Variable *ptr1;
+		Oper *ptr2;
+		if ((ptr1 = dynamic_cast<Variable *>(infix[i - 1])) && (ptr2 = dynamic_cast<Oper *>(infix[i]))) {
+			Variable *lexemvar = (Variable *)infix[i - 1];
+			Oper *lexemop = (Oper *)infix[i];
+			if (lexemop -> getType() == COLON) {
+				Goto::lTable.insert({lexemvar -> getName(), row});
+				Variable::vTable.erase(lexemvar -> getName());
+				delete infix[i - 1];
+				delete infix[i];
+				infix[i - 1] = nullptr;
+				infix[i] = nullptr;
+				i++;
+			}
+		}
+	}
+}
 
 std::vector<Lexem *> buildPostfix (std::vector<Lexem *> infix) {
 	std::vector<Lexem *> lexemStack;
 	std::vector<Oper *> operStack;
 	for (auto &elem: infix) {
+		if (elem == nullptr) {
+			continue;
+		}
 		Number *ptr1;
 		Variable *ptr2;
 		if ((ptr1 = dynamic_cast<Number *>(elem)) || (ptr2 = dynamic_cast<Variable *>(elem))) {
@@ -300,7 +430,7 @@ std::vector<Lexem *> buildPostfix (std::vector<Lexem *> infix) {
 			continue;
 		}
 		if (((Oper *)elem) -> getPriority() <= (operStack.back()) -> getPriority()) {
-			while (!(operStack.empty()) && ((operStack.back()) -> getType()) != LBRACKET) {
+			while (!(operStack.empty()) && ((operStack.back()) -> getPriority() > 0)) {
 				lexemStack.push_back(operStack.back());
 				operStack.pop_back();
 			}
@@ -316,7 +446,8 @@ std::vector<Lexem *> buildPostfix (std::vector<Lexem *> infix) {
 	return lexemStack;
 }
 
-int evaluatePostfix(std::vector<Lexem *> postfix) {
+
+int evaluatePostfix(std::vector<Lexem *> postfix, int row) {
 	std::vector<Lexem *> estimation;
 	std::vector<Number *> need_to_clear;
 	Lexem *res;
@@ -328,6 +459,11 @@ int evaluatePostfix(std::vector<Lexem *> postfix) {
 		if (Variable *ptr = dynamic_cast<Variable *>(elem)) {
 			estimation.push_back(elem);
 		} else {
+			if (((Oper *)elem) -> getType() == GOTO) {
+				Variable *label = (Variable *)estimation.back();
+				estimation.pop_back();
+				return Goto::lTable[label -> getName()];
+			}
 			res = estimation.back();
 			estimation.pop_back();
 			res = new Number(((Oper *)elem) -> getValue(estimation.back(), res));
@@ -338,43 +474,53 @@ int evaluatePostfix(std::vector<Lexem *> postfix) {
 	}
 	res = estimation.back();
 	estimation.pop_back();
-	int result;
-	if (Number *ptr = dynamic_cast<Number *>(res)) {
-		result = ((Number *)res) -> getValue();
-	}
-	if (Variable *ptr = dynamic_cast<Variable *>(res)) {
-		result = ((Variable *)res) -> getValue();
-	}
 	for (auto &cl: need_to_clear) {
 		delete cl;
 	}
-	return result;
+	return row + 1;
 }
 
 int main(void) {
 	std::string codeline;
-	std::vector<Lexem *> infix, postfix;
-	int value;
+	std::vector<std::vector<Lexem *>> infixLines, postfixLines;
+//	int value;
 	while (getline(std::cin, codeline)) {
+		
 		if (codeline == "exit") {
 			break;
 		}
-		infix = parseLexem(codeline);
-/*		std::cout << std::endl << "size of infix = " << infix.size() <<std::endl;
-		for (auto &p: infix) {
-			if (Number *ptr = dynamic_cast<Number *>(p)) {
-				((Number *)p) -> print();
-				continue;
+
+		infixLines.push_back(parseLexem(codeline));
+/*		for (int i = 0; i < infixLines.size(); ++i) {
+			std::cout << std::endl << "size of infix = " << infixLines[i].size() <<std::endl;
+			for (auto &p: infixLines[i]) {
+				if (Number *ptr = dynamic_cast<Number *>(p)) {
+					((Number *)p) -> print();
+					continue;
+				}
+				if (Variable *ptr = dynamic_cast<Variable *>(p)) {
+					((Variable *)p) -> print();
+				} else {
+					((Oper *)p) ->print();
+				}
 			}
-			if (Variable *ptr = dynamic_cast<Variable *>(p)) {
-				((Variable *)p) -> print();
-			} else {
-				((Oper *)p) ->print();
-			}
-		}*/
-		postfix = buildPostfix(infix);
-/*		std::cout << std::endl << postfix.size() << std::endl;
-		for (auto &p: postfix) {
+		}
+		std::cout << "\n----------------------------------\n";*/
+	}
+
+	for (int row = 0; row < infixLines.size(); ++row) {
+		initLabels(infixLines[row], row);
+	}
+
+/*	for (auto &i: Goto::lTable) {
+		std::cout << i.first << " in " << i.second << std::endl;
+	}*/
+
+	for (const auto &infix: infixLines) {
+		postfixLines.push_back(buildPostfix(infix));
+	}
+/*	for (int i = 0; i < postfixLines.size(); ++i) {
+		for (auto &p: postfixLines[i]) {
 			if (Number *ptr = dynamic_cast<Number *>(p)) {
 				((Number *)p) -> print();
 				continue;
@@ -385,11 +531,25 @@ int main(void) {
 				((Oper *)p) -> print();
 			}
 		}
-		std::cout << std::endl;*/
-		value = evaluatePostfix(postfix);
-		std::cout << ">>>" << value << std::endl;
-		for (auto &cl: infix) {
-			delete cl;
+		std::cout << "\n----------------------------------\n";
+	}*/
+	int row = 0;
+
+	while (0 <= row && row < (int)postfixLines.size()) {
+		row = evaluatePostfix(postfixLines[row], row);
+	}
+
+
+	for (auto &cl: Variable::vTable) {
+		std::cout << cl.first << " = " << cl.second << std::endl;
+	}
+
+
+	for (int i = 0; i < infixLines.size(); i++) {
+		for (auto &cl: infixLines[i]) {
+			if (cl) {
+				delete cl;
+			}
 		}
 	}
 	return 0;
