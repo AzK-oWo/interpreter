@@ -22,7 +22,7 @@ enum OPERATOR {
 	MULT, DIV, MOD
 };
 
-int PRIORITY [] = {
+int PRIORITY [] = { // TY[] = 
 	-1, -1,
 	0, 0, 0,
 	1,
@@ -130,7 +130,7 @@ class Oper : public Lexem {
 };
 
 
-int Oper::getPriority() {
+int Oper::getPriority() { //get_priority()
 	return PRIORITY[(int)opertype];
 }
 
@@ -141,7 +141,7 @@ int Oper::getPriority() {
 
 
 
-class Goto : public Oper {
+class Goto : public Oper { // Goto: public
   public:
 	static std::map<std::string, int> lTable;
 };
@@ -159,7 +159,7 @@ std::map<std::string, int> Goto::lTable;
 
 
 
-class Variable : public Lexem {
+class Variable : public Lexem { // Variable: public
 	std::string vName;
   public:
 	Variable() {};
@@ -224,7 +224,7 @@ int Oper::getValue(Lexem *leftlex, Lexem *rightlex) {
 	if (Variable *ptr = dynamic_cast<Variable *>(rightlex)) {
 		right = ((Variable *)rightlex) -> getValue();
 	}
-	switch (Oper::opertype) {
+	switch (Oper::opertype) { // tab
 			case ASSIGN:
 				int tmp;
 				if (Number *ptr = dynamic_cast<Number *>(rightlex)) {
@@ -296,7 +296,7 @@ int Oper::getValue(Lexem *leftlex, Lexem *rightlex) {
 
 
 
-Lexem *isOper(std::string codeline, int *i, int size) {
+Lexem *isOper(std::string codeline, int *i, int size) { //is_oper()
 	int p = *i;
 	Lexem *lex = nullptr;
 	char tmp = codeline[p];
@@ -319,7 +319,7 @@ Lexem *isOper(std::string codeline, int *i, int size) {
 
 
 
-Lexem *isNumber(std::string codeline, int *i, int size) {
+Lexem *isNumber(std::string codeline, int *i, int size) { // int &
 	int p = *i, number = 0;
 	for ( ; p < size && codeline[p] >= '0' && codeline[p] <= '9'; p++) {
 		number = number * 10 + codeline[p] - '0';
@@ -338,13 +338,13 @@ Lexem *isVariable(std::string codeline, int *i, int size) {
 	int p = *i;
 	std::string vrbl;
 	while (p < size && ((codeline[p] >= 'A' && codeline[p] <= 'Z') || (codeline[p] >= 'a' && codeline[p] <= 'z') || (codeline[p] >= '0' && codeline[p] <= '9'))) {
-		vrbl += codeline[p];
+		vrbl += codeline[p]; //variable
 		p++;
 	}
-	if (p == *i) {
+	if (p == *i) { //if vrbl.isempty()
 		return nullptr;
 	}
-	*i = p;
+	*i = p; 
 	Lexem *lex = new Variable(vrbl);
 	return lex;
 }
@@ -388,7 +388,7 @@ void initLabels(std::vector<Lexem *> &infix, int row) {
 			Oper *lexemop = (Oper *)infix[i];
 			if (lexemop -> getType() == COLON) {
 				Goto::lTable.insert({lexemvar -> getName(), row});
-				Variable::vTable.erase(lexemvar -> getName());
+				Variable::vTable.erase(lexemvar -> getName()); // r->g
 				delete infix[i - 1];
 				delete infix[i];
 				infix[i - 1] = nullptr;
@@ -480,7 +480,22 @@ int evaluatePostfix(std::vector<Lexem *> postfix, int row) {
 	return row + 1;
 }
 
-int main(void) {
+// ./interpreter filename.txt
+// ./interpreter filename.txt --verbose
+// ./interpreter --verbose
+
+
+int main(void) { // main(int argc, char** argv)
+	// for (i = 1; i < argc; i++)
+	//     if (string(argv[i]) == "--verbose") {
+	//          DEBUG = 1;
+	//     }
+
+	// for (i = 1; i < argc; i++)
+	//     if (string(argv[i]).substr(???) == ".txt") {
+	//          INTERACTIV = 0;
+	//     }
+	
 	std::string codeline;
 	std::vector<std::vector<Lexem *>> infixLines, postfixLines;
 //	int value;
