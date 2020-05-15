@@ -3,8 +3,8 @@
 
 class Lexem {
   public:
-	Lexem () {};
-	virtual ~Lexem () {};
+	Lexem();
+	virtual ~Lexem();
 };
 
 #endif

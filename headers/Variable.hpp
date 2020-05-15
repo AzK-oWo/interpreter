@@ -4,18 +4,19 @@
 #include <string>
 #include <map>
 #include "Lexem.hpp"
+#include "Function.hpp"
 
 class Variable: public Lexem {
-	std::string vName;
+	std::string v_name;
   public:
-	Variable () {};
-	Variable (std::string str) { vName = str; vtable[vName]; };
-	~Variable () {};
+	Variable();
+	Variable(std::string str);
+	~Variable();
 	std::string get_name();
-	int get_value();
-	void set_value(int value);
+	int check_var(Function *function);
+	void set_value(Function *function, int num);
+	int get_value(Function *function);
 	void print();
-	static std::map<std::string,int> vtable;
 };
 
 #endif

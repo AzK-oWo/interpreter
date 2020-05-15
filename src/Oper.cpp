@@ -1,9 +1,22 @@
 #include <iostream>
+#include <string>
 #include "Lexem.hpp"
 #include "Oper.hpp"
 #include "Number.hpp"
 #include "Variable.hpp"
-#include "interpreter.hpp"
+#include "enum.hpp"
+
+Oper::Oper() {}
+
+Oper::Oper(OPERATOR opertype) {
+	Oper::opertype = opertype;
+}
+
+Oper::~Oper() {}
+
+void Oper::set_type(OPERATOR optype) {
+	opertype = optype;
+}
 
 OPERATOR Oper::get_type() {
 	return opertype;
@@ -13,7 +26,7 @@ int Oper::get_priority() {
 	return PRIORITY[(int)opertype];
 }
 
-int Oper::get_value(Lexem *leftlex, Lexem *rightlex) {
+/*int Oper::get_value(Lexem *leftlex, Lexem *rightlex, Function *function) {
 	int left, right;
 	if (Number *ptr = dynamic_cast<Number *>(leftlex)) {
 		left = ((Number *)leftlex) -> get_value();
@@ -22,21 +35,25 @@ int Oper::get_value(Lexem *leftlex, Lexem *rightlex) {
 		right = ((Number *)rightlex) -> get_value();
 	}
 	if (Variable *ptr = dynamic_cast<Variable *>(leftlex)) {
-		left = ((Variable *)leftlex) -> get_value();
+		left = ((Variable *)leftlex) -> get_value(function);
 	}
 	if (Variable *ptr = dynamic_cast<Variable *>(rightlex)) {
-		right = ((Variable *)rightlex) -> get_value();
+		right = ((Variable *)rightlex) -> get_value(function);
 	}
-	switch (Oper::opertype) { // tab
+	switch (Oper::opertype) {
 			case ASSIGN:
-				int tmp;
-				if (Number *ptr = dynamic_cast<Number *>(rightlex)) {
-					tmp = ((Number *)rightlex) -> get_value();
+				if (Variable *ptr = dynamic_cast<Variable *>(leftlex)) {
+					int tmp;
+					if (Number *ptr = dynamic_cast<Number *>(rightlex)) {
+						tmp = ((Number *)rightlex) -> get_value();
+					} else {
+						tmp = ((Variable *)rightlex) -> get_value(function);
+					}
+					((Variable *)leftlex) -> set_value(function, tmp);
+					return tmp;
 				} else {
-					tmp = ((Variable *)rightlex) -> get_value();
+					throw(ERR_ASSIGN_PROBLEMS);
 				}
-				((Variable *)leftlex) -> set_value(tmp);
-				return tmp;
 			case PLUS:
 				return left + right;
 			case MINUS:
@@ -75,8 +92,8 @@ int Oper::get_value(Lexem *leftlex, Lexem *rightlex) {
 				return left >> right;
 	}
 	return 0;
-}
+}*/
 
 void Oper::print() {
-	std::cout << '[' << OPERTEXT[(int)opertype] << "] ";
+	std::cout << '|' << OPERTEXT[(int)opertype] << "| ";
 }

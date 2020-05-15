@@ -2,20 +2,32 @@
 #include <map>
 #include <iostream>
 #include "Variable.hpp"
+#include "Function.hpp"
+
+Variable::Variable() {}
+
+Variable::Variable(std::string str) {
+	v_name = str; 
+}
+
+Variable::~Variable() {}
 
 std::string Variable::get_name() {
-	return vName;
+	return v_name;
 }
 
-void Variable::set_value(int value) {
-	vtable[vName] = value;
+int Variable::check_var(Function *function) {
+	return function -> check_var(v_name);
 }
 
-int Variable::get_value() {
-	return vtable[vName];
+void Variable::set_value(Function *function, int num) {
+	function -> set_value(v_name, num);
 }
+
+int Variable::get_value(Function *function) {
+	return (function -> get_value(v_name));
+}
+
 void Variable::print() {
-	std::cout << '[' << vName << "] ";
+	std::cout << '[' << v_name << "] ";
 }
-
-std::map<std::string,int> Variable::vtable;

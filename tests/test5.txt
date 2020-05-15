@@ -1,0 +1,32 @@
+def sqrt(a)
+	return a * a
+fed
+
+def foo()
+	a := 5
+	c := 4
+	r := 8
+	return
+fed
+
+def qwerty(a, b, c)
+	c := b - a
+	return c
+fed
+
+def sum(a, b)
+	return a + b
+fed
+
+def main()
+	a := 5
+	b := 6
+	definition := sum(a, b) + 1 - qwerty(a, b, sum(a, b - 3))
+	i:= 2
+	foo()
+	definition := definition + i
+	if (i > 0) and (definition) > 0:
+		sqrt(definition)
+	@
+	return
+fed
