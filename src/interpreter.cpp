@@ -423,7 +423,7 @@ std::vector<Lexem *> build_postfix(std::vector<Lexem *> infix) {
 				}
 			}
 			operator_stack.pop_back();
-			if ((operator_stack.back()) -> get_type() == FUNCTION) {
+			if (!operator_stack.empty() &&(operator_stack.back()) -> get_type() == FUNCTION) {
 				lexem_stack.push_back(operator_stack.back());
 				operator_stack.pop_back();
 			}
@@ -532,33 +532,36 @@ int evaluate_postfix(std::vector<std::vector<Lexem *>> &postfix, int row, Functi
 	int i = 0;
 	for (auto &element: postfix[row]) {
 		std::cout << i++ << '\n';
-		std::cout << "row = " << row << std::endl;
-				std::cout << "\n**********************************\n" << "Stack<" << stack.size() << ">:\n";
-				for (auto &debug: stack) {
-					if (debug == nullptr) {
-						continue;
-					}
-					if (dynamic_cast<Number *>(debug)) {
-						((Number *)debug) -> print();
-						continue;
-					}
-					if (dynamic_cast<Variable *>(debug)) {
-						((Variable *)debug) -> print();
-						continue;
-					}
-					if (dynamic_cast<Function *>(debug)) {
-						((Function *)debug) -> print();
-						continue;
-					}
-					if (dynamic_cast<Goto *>(debug)) {
-						((Goto *)debug) -> print();
-					} else {
-						((Oper *)debug) -> print();
-					}
+		std::cout << "row = " << row + 1 << std::endl;
+		if (DEBUG) {
+			std::cout << "\n**********************************\n" << "Stack<" << stack.size() << ">:\n";
+			for (auto &debug: stack) {
+				if (debug == nullptr) {
+					continue;
 				}
-				std::cout << "\n----------------------------------\n";
-			
-
+				if (dynamic_cast<Number *>(debug)) {
+					((Number *)debug) -> print();
+					continue;
+				}
+				if (dynamic_cast<Variable *>(debug)) {
+					((Variable *)debug) -> print();
+					continue;
+				}
+				if (dynamic_cast<Function *>(debug)) {
+					((Function *)debug) -> print();
+					continue;
+				}
+				if (dynamic_cast<Goto *>(debug)) {
+					((Goto *)debug) -> print();
+				} else {
+					((Oper *)debug) -> print();
+				}
+			}
+			std::cout << "\n----------------------------------\n";
+		}
+		if (element == nullptr) {
+			continue;
+		}
 		if (dynamic_cast<Number *>(element)) {
 			stack.push_back(element);
 			continue;
@@ -723,35 +726,33 @@ int evaluate_postfix(std::vector<std::vector<Lexem *>> &postfix, int row, Functi
 			need_to_clear.push_back((Number *)res);
 		}
 	}
-
-
-				std::cout << "\n**********************************\n" << "Stack<" << stack.size() << ">:\n";
-				for (auto &debug: stack) {
-					if (debug == nullptr) {
-						continue;
-					}
-					if (dynamic_cast<Number *>(debug)) {
-						((Number *)debug) -> print();
-						continue;
-					}
-					if (dynamic_cast<Variable *>(debug)) {
-						((Variable *)debug) -> print();
-						continue;
-					}
-					if (dynamic_cast<Function *>(debug)) {
-						((Function *)debug) -> print();
-						continue;
-					}
-					if (dynamic_cast<Goto *>(debug)) {
-						((Goto *)debug) -> print();
-					} else {
-						((Oper *)debug) -> print();
-					}
-				}
-				std::cout << "\n----------------------------------\n";
-	
-
-	if (stack.back()) {
+	if (DEBUG) {
+		std::cout << "\n**********************************\n" << "Stack<" << stack.size() << ">:\n";
+		for (auto &debug: stack) {
+			if (debug == nullptr) {
+				continue;
+			}
+			if (dynamic_cast<Number *>(debug)) {
+				((Number *)debug) -> print();
+				continue;
+			}
+			if (dynamic_cast<Variable *>(debug)) {
+				((Variable *)debug) -> print();
+				continue;
+			}
+			if (dynamic_cast<Function *>(debug)) {
+				((Function *)debug) -> print();
+				continue;
+			}
+			if (dynamic_cast<Goto *>(debug)) {
+				((Goto *)debug) -> print();
+			} else {
+				((Oper *)debug) -> print();
+			}
+		}
+		std::cout << "\n----------------------------------\n";
+	}
+	if (!stack.empty()) {
 		int tmp;
 		if (dynamic_cast<Number *>(stack.back())) {
 			tmp = ((Number *)stack.back()) -> get_value();
@@ -765,10 +766,10 @@ int evaluate_postfix(std::vector<std::vector<Lexem *>> &postfix, int row, Functi
 			throw (ERR_NOT_BALANCED_BRACKETS);
 		}
 		*result = new Number(tmp);
+		stack.pop_back();
 	} else {
 		*result = nullptr;
 	}
-	stack.pop_back();
 	for (auto &cl: need_to_clear) {
 		if (cl)
 			delete cl;

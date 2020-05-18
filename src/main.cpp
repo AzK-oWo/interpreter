@@ -118,11 +118,8 @@ int main(int argc, char** argv) {
 			try {
 				row = evaluate_postfix(postfixlines, row, &main, &res);
 				if (DEBUG || INTERACTIVE) {	
-					std::cout << ">>>>>>";
-					if (res == nullptr) {
-						std::cout << "_function is non_void";
-					} else {
-						std::cout << (res -> get_value());
+					if (res != nullptr) {
+						std::cout << ">>>>>>" <<(res -> get_value());
 						delete res;
 					}
 				}
