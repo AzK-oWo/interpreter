@@ -17,38 +17,48 @@ _*_ - multyply
 *or* - binary or  
 *|* - bitware or  
 *&* - bitware and  
-*> >= < <= != :=* - comparison signs  
-*>> <<* - bit shift
+*>, >=, <, <=, !=, :=* - comparison signs  
+*>>, <<* - bit shift
 
 ### How to use goto:
 	
 	...
 	goto L: 
 	...
-	L:
-	code	 
+	L: # label always have to exist
+	_code_
 
 ### How to use if else and while:
 
-	**f** _condition_:
-		code
+	if _condition_:
+		_code_
 	else:
-		code
+		_code_
 	@
 
+
+
 	while condition:
-		code
+		_code_
 	else:
-		code
-	@ 
+		_code_
+	@ # this is the end of contion. It must always be used
 
 ### How to declare function and use it:
+
 	def function(arg1, arg2, ...)
-		code
-		return nothing or value
-	fed
+		_code_
+		return nothing_or_value
+	fed # this is the end of function. It must always be used
 	...
 	function(a,b,c)	
+
+### Code always have to have main function(where code execution starts)
+
+	def main()
+		_code_
+		return 0
+	fed
 
 ## What iterpreter is capable of
 
