@@ -154,7 +154,7 @@ _*_ - multyply
 
 Firstable, program needs to be complied by command **make fastcreate**
 
-Secondly, code have to be written in the txt file in advance
+Then, code have to be written in the txt file in advance
 
 If you want to use some example codes you can check it in "tests" folder. Use command **make test n _(n from 1 to 5)_** to run the program by one of example.
 
