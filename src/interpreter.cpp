@@ -593,6 +593,9 @@ int evaluate_postfix(std::vector<std::vector<Lexem *>> &postfix, int row, Functi
 			}
 			int func_row = ((Goto *)element) -> get_row();
 			Number *func_result = nullptr;
+			if (DEBUG) {
+				std::cout << "function " << function_elem -> get_name() << ":\n";
+			}
 			while (0 <= func_row && func_row < (int)postfix.size()) {
 				try {
 					func_row = evaluate_postfix(postfix, func_row, &function_elem, &func_result);
@@ -604,6 +607,9 @@ int evaluate_postfix(std::vector<std::vector<Lexem *>> &postfix, int row, Functi
 					std::cerr << "function " << function_elem -> get_name() << " problems in " << func_row + 1 << " string:\n";
 					throw (e);	
 				}
+			}
+			if (DEBUG) {
+				std::cout << "function " << function_elem -> get_name() << " finished\n";
 			}
 			stack.push_back(func_result);
 			if (func_result) {
@@ -754,21 +760,25 @@ int evaluate_postfix(std::vector<std::vector<Lexem *>> &postfix, int row, Functi
 	}
 	if (!stack.empty()) {
 		int tmp;
-		if (dynamic_cast<Number *>(stack.back())) {
-			tmp = ((Number *)stack.back()) -> get_value();
-		} else if (dynamic_cast<Variable *>(stack.back())){
-			tmp = ((Variable *)stack.back()) -> get_value(*function_field);
+		if (!stack.back()) {
+			*result = nullptr;
 		} else {
-			for (auto &cl: need_to_clear) {
-				if (cl)
-					delete cl;
+			if (dynamic_cast<Number *>(stack.back())) {
+				tmp = ((Number *)stack.back()) -> get_value();
+			} else if (dynamic_cast<Variable *>(stack.back())){
+				tmp = ((Variable *)stack.back()) -> get_value(*function_field);
+			} else {
+				for (auto &cl: need_to_clear) {
+					if (cl)
+						delete cl;
+				}
+				throw (ERR_NOT_BALANCED_BRACKETS);
 			}
-			throw (ERR_NOT_BALANCED_BRACKETS);
+			*result = new Number(tmp);
 		}
-		*result = new Number(tmp);
 		stack.pop_back();
 	} else {
-		*result = nullptr;
+		throw (ERR_NOT_BALANCED_BRACKETS);
 	}
 	for (auto &cl: need_to_clear) {
 		if (cl)

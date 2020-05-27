@@ -2,65 +2,79 @@
 
 ## About interpreter
 
-I am sudent from KB MSU and it my first experience to create an interpreter  
+I am sudent from MSU Kazakhstan branch and it my first experience to create an interpreter  
 
 This interpreter has simular options like other programming languages
 
 ### It has only binary arithmetic:
 
-*+* - plus  
-*-* - minus  
-_*_ - multyply  
-*/* - division  
-*%* - mod  
-*and* - binary and  
-*or* - binary or  
-*|* - bitware or  
-*&* - bitware and  
-*>, >=, <, <=, !=, :=* - comparison signs  
-*>>, <<* - bit shift
+-----------------------------------
+'+' | plus  
+'-' | minus  
+'*' | multyply  
+'/' | division  
+'%' | mod  
+'and' | binary and  
+'or' | binary or  
+'|' | bitware or  
+'&' | bitware and  
+'> >= < <= != :=' | comparison signs  
+'>> <<' | bit shift
+------------------------------------
 
 ### How to use goto:
 	
 	...
 	goto L: 
 	...
-	L: # label always have to exist
-	_code_
+	L:
+	...
 
 ### How to use if else and while:
 
-	if _condition_:
-		_code_
+	if condition:
+		...
 	else:
-		_code_
+		...
 	@
 
 
 
 	while condition:
-		_code_
-	else:
-		_code_
-	@ # this is the end of contion. It must always be used
+		...
+	@
 
 ### How to declare function and use it:
 
-	def function(arg1, arg2, ...)
-		_code_
-		return nothing_or_value
-	fed # this is the end of function. It must always be used
+	def function(arg1, arg2, arg3)
+		...
+		return value
+	fed
 	...
-	function(a,b,c)	
+	x = function(a,b,c)	
 
-### Code always have to have main function(where code execution starts)
+	def function()
+		...
+		return 5 + 9
+	fed
+	...
+	function()
+
+	def function(arg1)
+		...
+		return
+	fed
+	...
+	function(a)
+
+### Code always have entry point:
 
 	def main()
-		_code_
+		...
 		return 0
 	fed
 
-## What iterpreter is capable of
+## Some examples
 
 ### Arithmetic operation:
 
@@ -148,14 +162,24 @@ _*_ - multyply
 
 ### Interpreter has debug options. You just need to use the flag **--verbose**.
 
-### doesn't has interactive form, so the code have to be inside txt file.
+### It would be better if someone will add interactive mode.
 
 ## How to start:
 
-Firstable, program needs to be complied by command **make fastcreate**
+###Compile:
 
-Then, code have to be written in the txt file in advance
+	make fastcreate
 
-If you want to use some example codes you can check it in "tests" folder. Use command **make test n _(n from 1 to 5)_** to run the program by one of example.
+###Start the program:
 
-Final, run the program with your txt file like *bin/interpreter << my_example.txt --verbose* and enjoy 
+The code have to be written in the txt file in advance.
+
+If you want to use some examples you can check it in "tests" folder. Use the command to run the program by one of example:
+	
+	make test$n
+
+where $n := 1 - 5
+
+Run the program with your txt file like: 
+
+	bin/interpreter << my_example.txt --verbose 
