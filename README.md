@@ -7,20 +7,20 @@ I am sudent from MSU Kazakhstan branch and it my first experience to create an i
 This interpreter has simular options like other programming languages
 
 ### There is a binary arithmetic:
-|
------------------------------------
-'+' | plus  
-'-' | minus  
-'*' | multyply  
-'/' | division  
-'%' | mod  
-'and' | binary and  
-'or' | binary or  
-'|' | bitware or  
-'&' | bitware and  
-'> >= < <= != :=' | comparison signs  
-'>> <<' | bit shift
-------------------------------------
+
+-----------------|------------------
+`+` | plus  
+`-` | minus  
+`*` | multyply  
+`/` | division  
+`%` | mod  
+`and` | binary and  
+`or` | binary or  
+`|` | bitware or  
+`&` | bitware and  
+`> >= < <= != :=` | comparison signs  
+`>> <<` | bit shift
+-------------------|-----------------
 
 ### How to use goto:
 	
@@ -165,11 +165,11 @@ This interpreter has simular options like other programming languages
 
 ## How to start:
 
-###Compile:
+### Compile:
 
 	make fastcreate
 
-###Start the program:
+### Start the program:
 
 The code have to be written in the txt file in advance.
 
