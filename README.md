@@ -52,12 +52,16 @@ Symbol | meaning
 	...
 	x = function(a,b,c)	
 
+or
+
 	def function()
 		...
 		return 5 + 9
 	fed
 	...
 	function()
+
+or
 
 	def function(arg1)
 		...
@@ -127,7 +131,7 @@ Symbol | meaning
 	def sqrt(a)
 		return a * a
 	fed
-
+	
 	def foo()
 		a := 5
 		c := 4
