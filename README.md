@@ -6,8 +6,8 @@ I am sudent from MSU Kazakhstan branch and it my first experience to create an i
 
 This interpreter has simular options like other programming languages
 
-### It has only binary arithmetic:
-
+### There is a binary arithmetic:
+|
 -----------------------------------
 '+' | plus  
 '-' | minus  
@@ -37,7 +37,6 @@ This interpreter has simular options like other programming languages
 	else:
 		...
 	@
-
 
 
 	while condition:
@@ -158,11 +157,11 @@ This interpreter has simular options like other programming languages
 		return
 	fed
 
-### Also it has error handler, which is working by try-catch blocks.
+### Also it has error handler, which is working with try-catch blocks.
 
-### Interpreter has debug options. You just need to use the flag **--verbose**.
+### Interpreter has debug options. You need just to use the flag **--verbose**.
 
-### It would be better if someone will add interactive mode.
+### It would be better to add interactive mode.
 
 ## How to start:
 
@@ -174,12 +173,10 @@ This interpreter has simular options like other programming languages
 
 The code have to be written in the txt file in advance.
 
-If you want to use some examples you can check it in "tests" folder. Use the command to run the program by one of example:
+If you want to use some examples you can see in "tests" folder. Use the command below to run the program:
 	
-	make test$n
+	make test$n # where $n := 1 - 5
 
-where $n := 1 - 5
+Run the program with your txt file as follow:
 
-Run the program with your txt file like: 
-
-	bin/interpreter << my_example.txt --verbose 
+	bin/interpreter << your_code.txt --verbose 
