@@ -12,12 +12,12 @@ Symbol | meaning
 -------|--------
 `+` | plus  
 `-` | minus  
-`*` | multyply  
+`*` | multiply  
 `/` | division  
 `%` | mod  
 `and` | binary and  
 `or` | binary or  
-`/|` | bitware or  
+`\|` | bitware or  
 `&` | bitware and  
 `> >= < <= != :=` | comparison signs  
 `>> <<` | bit shift
