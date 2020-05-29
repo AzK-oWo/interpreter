@@ -8,7 +8,8 @@ This interpreter has simular options like other programming languages
 
 ### There is a binary arithmetic:
 
------------------|------------------
+Symbol | meaning
+-------|--------
 `+` | plus  
 `-` | minus  
 `*` | multyply  
@@ -20,7 +21,6 @@ This interpreter has simular options like other programming languages
 `&` | bitware and  
 `> >= < <= != :=` | comparison signs  
 `>> <<` | bit shift
--------------------|-----------------
 
 ### How to use goto:
 	
